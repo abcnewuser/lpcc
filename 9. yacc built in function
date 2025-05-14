@@ -1,0 +1,51 @@
+%{
+#include "y.tab.h"
+%}
+
+%%
+
+[a-zA-Z][a-zA-Z0-9_]*     { yylval.str = strdup(yytext); return VARIABLE; }
+.|\n                      { return yytext[0]; }
+
+%%
+
+
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int yylex();
+int yyerror(const char *s);
+%}
+
+%union {
+    char *str;
+}
+
+%token <str> VARIABLE
+
+%%
+
+input:
+    VARIABLE '\n' { printf("Valid variable name: %s\n", $1); free($1); }
+    | error '\n'  { yyerror("Invalid variable name"); yyerrok; }
+    ;
+
+%%
+
+int main() {
+    printf("Enter a variable name: ");
+    return yyparse();
+}
+
+int yyerror(const char *s) {
+    fprintf(stderr, "Error: %s\n", s);
+    return 0;
+}
+
+
+yacc -d varname.y
+lex varname.l
+gcc y.tab.c lex.yy.c -o varcheck
+./varcheck
