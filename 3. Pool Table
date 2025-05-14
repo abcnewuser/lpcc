@@ -1,0 +1,76 @@
+# literal and pool table
+
+assembly_code = [
+    "START 100",
+    "READ A",
+    "MOVER AREG, ='1'",
+    "MOVEM AREG, B",
+    "MOVER BREG, ='6'",
+    "ADD AREG, BREG",
+    "COMP AREG, A",
+    "BC GT, LAST",
+    "LTORG",
+    "NEXT SUB AREG, ='1'",
+    "MOVER CREG, B",
+    "ADD CREG, ='8'",
+    "MOVEM CREG, B",
+    "PRINT B",
+    "LAST STOP",
+    "A DS 1",
+    "B DS 1",
+    "END"
+]
+
+location_counter = 0
+literal_table = []
+literal_map = {}
+pool_table = []
+current_pool = []
+
+def add_to_literal(literal):
+    if literal not in literal_map:
+        literal_map[literal] = None
+        literal_table.append(literal)
+
+for line in assembly_code:
+    tokens = line.strip().split()
+
+    if tokens[0] == 'START':
+        location_counter = int(tokens[1])
+        continue
+
+    for token in tokens:
+        if "='" in token:
+            literal = token[token.index("='"):].strip(",")
+            add_to_literal(literal)
+
+    if tokens[0] == 'LTORG' or tokens[0] == 'END':
+        # Mark new pool starting index
+        if pool_table:
+            last_index = pool_table[-1]
+        else:
+            last_index = 0
+        pool_table.append(len([v for v in literal_map.values() if v is not None]) + 1)
+
+        # Assign addresses to current pool literals
+        for literal in literal_table:
+            if literal_map[literal] is None:
+                literal_map[literal] = location_counter
+                location_counter += 1
+
+    elif "DS" in tokens:
+        location_counter += int(tokens[-1])
+    elif tokens[0] != 'END':
+        location_counter += 1
+
+# Display Literal Table
+print("\nLiteral Table:")
+print("{:<6} {:<10} {:<10}".format("Index", "Literal", "Address"))
+for i, literal in enumerate(literal_table):
+    print("{:<6} {:<10} {:<10}".format(i+1, literal, literal_map[literal]))
+
+# Display Pool Table
+print("\nPool Table:")
+print("{:<8} {:<20}".format("Pool #", "Starting Literal Index"))
+for i, start_index in enumerate(pool_table):
+    print("{:<8} {:<20}".format(i+1, start_index))
