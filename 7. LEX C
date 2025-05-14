@@ -1,0 +1,50 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+
+// Keywords
+"int"           { printf("KEYWORD: %s\n", yytext); }
+
+// Identifiers (excluding keywords)
+[a-zA-Z_][a-zA-Z0-9_]*   { printf("IDENTIFIER: %s\n", yytext); }
+
+// Numbers
+[0-9]+          { printf("NUMBER: %s\n", yytext); }
+
+// Operators
+"="             { printf("ASSIGNMENT OPERATOR: %s\n", yytext); }
+"-"             { printf("ARITHMETIC OPERATOR: %s\n", yytext); }
+
+// Delimiters
+";"             { printf("SEMICOLON: %s\n", yytext); }
+","             { printf("COMMA: %s\n", yytext); }
+
+// Braces
+"{"             { printf("OPEN BRACE: %s\n", yytext); }
+"}"             { printf("CLOSE BRACE: %s\n", yytext); }
+
+// Whitespace
+[ \t\n]+        { /* Skip whitespace */ }
+
+// Anything else
+.               { printf("UNKNOWN: %s\n", yytext); }
+
+%%
+
+int main()
+{
+    yylex();
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}
+
+
+lex c_lexer.l
+gcc lex.yy.c -o c_lexer
+./c_lexer
