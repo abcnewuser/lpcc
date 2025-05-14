@@ -1,0 +1,88 @@
+assembly_code = [
+    "LOAD A",
+    "MACRO ABC",
+    "LOAD p",
+    "SUB q",
+    "MEND",
+    "STORE B",
+    "MULT D",
+    "MACRO ADD1 ARG",
+    "LOAD X",
+    "STORE ARG",
+    "MEND",
+    "LOAD B",
+    "MACRO ADD5 A1, A2, A3",
+    "STORE A2",
+    "ADD1 5",
+    "ADD1 10",
+    "LOAD A1",
+    "LOAD A3",
+    "MEND",
+    "ADD1 t",
+    "ABC",
+    "ADD5 D1, D2, D3",
+    "END"
+]
+
+mnt = []  # Macro Name Table
+mdt = []  # Macro Definition Table
+ala = {}  # Argument List Array
+in_macro_def = False
+current_macro = ""
+current_ala = {}
+
+for line in assembly_code:
+    tokens = line.strip().split()
+
+    if not tokens:
+        continue
+
+    if tokens[0] == "MACRO":
+        in_macro_def = True
+        current_ala = {}
+
+        # Parse macro name and parameters
+        current_macro = tokens[1]
+        args = []
+
+        # Collect arguments after macro name, handling multiple tokens
+        if len(tokens) > 2:
+            args_line = ' '.join(tokens[2:])
+            args = [arg.strip() for arg in args_line.split(',') if arg.strip()]
+
+        for i, arg in enumerate(args):
+            current_ala[arg] = f"#{i+1}"
+
+        mnt.append((current_macro, len(mdt) + 1))  # MDT index starts from 1
+        ala[current_macro] = current_ala.copy()
+        continue
+
+    elif tokens[0] == "MEND":
+        mdt.append("MEND")
+        in_macro_def = False
+        current_macro = ""
+        current_ala = {}
+        continue
+
+    if in_macro_def:
+        # Replace arguments with positional notations
+        line_tokens = line.strip().split()
+        for i in range(len(line_tokens)):
+            if line_tokens[i] in current_ala:
+                line_tokens[i] = current_ala[line_tokens[i]]
+        mdt.append(' '.join(line_tokens))
+
+# Output Pass 1 Tables
+print("\nMacro Name Table (MNT):")
+print("Index  MacroName  MDTIndex")
+for i, (name, idx) in enumerate(mnt, 1):
+    print(f"{i:<7} {name:<10} {idx}")
+
+print("\nMacro Definition Table (MDT):")
+print("Index  Content")
+for i, line in enumerate(mdt, 1):
+    print(f"{i:<6} {line}")
+
+print("\nArgument List Arrays (ALA):")
+for macro, mapping in ala.items():
+    print(f"{macro}: {mapping}")
