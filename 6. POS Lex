@@ -1,0 +1,38 @@
+%{
+#include <stdio.h>
+%}
+
+%%
+
+"dread"             { printf("VERB: %s\n", yytext); }
+"run"               { printf("VERB: %s\n", yytext); }
+"arrives"           { printf("VERB: %s\n", yytext); }
+
+"destiny"           { printf("NOUN: %s\n", yytext); }
+"it"                { printf("PRONOUN: %s\n", yytext); }
+"all"               { printf("DETERMINER: %s\n", yytext); }
+"the"               { printf("DETERMINER: %s\n", yytext); }
+"same"              { printf("ADJECTIVE: %s\n", yytext); }
+"from"              { printf("PREPOSITION: %s\n", yytext); }
+
+[ \t\n]+            { /* ignore whitespace */ }
+[.,!?]              { printf("PUNCTUATION: %s\n", yytext); }
+[a-zA-Z]+           { printf("UNKNOWN: %s\n", yytext); }
+
+%%
+
+int main(int argc, char **argv)
+{
+    yylex();
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}
+
+
+lex pos.l
+gcc lex.yy.c -o pos
+./pos
