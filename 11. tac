@@ -1,0 +1,57 @@
+import ast
+
+class TACGenerator(ast.NodeVisitor):
+    def __init__(self):
+        self.temp_count = 1
+        self.code = []
+        self.vars = {}
+
+    def new_temp(self):
+        temp = f"t{self.temp_count}"
+        self.temp_count += 1
+        return temp
+
+    def visit_Module(self, node):
+        return self.visit(node.body[0])
+
+    def visit_Assign(self, node):
+        target = node.targets[0].id
+        expr_result = self.visit(node.value)
+        self.code.append(f"{target} = {expr_result}")
+
+    def visit_BinOp(self, node):
+        left = self.visit(node.left)
+        right = self.visit(node.right)
+        temp = self.new_temp()
+        op = self.get_op(node.op)
+        self.code.append(f"{temp} = {left} {op} {right}")
+        return temp
+
+    def visit_Name(self, node):
+        return node.id
+
+    def visit_Num(self, node):  # For Python <3.8
+        return str(node.n)
+
+    def visit_Constant(self, node):  # For Python >=3.8
+        return str(node.value)
+
+    def get_op(self, op):
+        if isinstance(op, ast.Add): return "+"
+        elif isinstance(op, ast.Sub): return "-"
+        elif isinstance(op, ast.Mult): return "*"
+        elif isinstance(op, ast.Div): return "/"
+        elif isinstance(op, ast.Mod): return "%"
+        else: raise NotImplementedError("Operator not supported")
+
+def generate_TAC(expr):
+    tree = ast.parse(expr)
+    tac = TACGenerator()
+    tac.visit(tree)
+    print("Three Address Code:")
+    for line in tac.code:
+        print(line)
+
+# === Runtime Input ===
+expr_input = input("Enter an expression (e.g., w = u*u - u*v + v*v):\n")
+generate_TAC(expr_input)
