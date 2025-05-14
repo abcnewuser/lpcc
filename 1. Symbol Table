@@ -1,0 +1,65 @@
+# Create a Symbol Table
+
+assembly_code = [
+#    "START 150",
+#  "   READ D",
+#     "READ E",
+# "LOOP	 MOVER AREG, D  ",
+# 	" MOVER BREG, E  ",
+#  "   COMP BREG, =’20’ ",
+# "	 BC GT, LOOP",
+# "BACK SUB AREG, E",
+#     "        COMP AREG, =’50’",
+# 	 "BC  LT, BACK ",
+#  "   STOP",
+# "D	 DS	1",
+# "E	 DS	1",
+# 	 "END"
+
+    "START 100",
+    "READ A",
+    "READ B",
+    "LOOP MOVER AREG, A",
+    "MOVER BREG, B",
+    "COMP BREG, ='2'",
+    "BC GT, LOOP",
+    "BACK SUB AREG, B",
+    "COMP AREG, ='5'",
+    "BC LT, BACK",
+    "STOP",
+    "A DS 1",
+    "B DS 1",
+    "END"
+
+]
+
+symbol_table = {}
+location_counter = 0
+
+for line in assembly_code:
+    tokens = line.strip().split()
+
+    if tokens[0] == 'START':
+        location_counter = int(tokens[1])
+        continue
+
+    # Check if line contains label (symbol) at beginning
+    if tokens[0][-1] != ',' and tokens[0] not in ['READ', 'MOVER', 'COMP', 'BC', 'STOP', 'END', 'DS']:
+        label = tokens[0]
+        symbol_table[label] = location_counter
+        # Check for DS (declaration of storage)
+        if len(tokens) > 1 and tokens[1] == 'DS':
+            location_counter += int(tokens[-1])
+        else:
+            location_counter += 1
+    else:
+          if tokens[0] == 'DS':
+            location_counter += int(tokens[-1])
+          elif tokens[0] != 'END':
+            location_counter += 1
+
+# Display Symbol Table
+print("\nSymbol Table:")
+print("{:<10} {:<10}".format("Symbol", "Address"))
+for symbol, address in symbol_table.items():
+    print("{:<10} {:<10}".format(symbol, address))
