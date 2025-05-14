@@ -1,0 +1,55 @@
+# Create Literal Table
+
+assembly_code = [
+    "START 100",
+    "READ A",
+    "READ B",
+    "MOVER AREG, ='50'",
+    "MOVER BREG, ='60'",
+    "ADD AREG, BREG",
+    "LOOP MOVER CREG, A",
+    "ADD CREG, ='10'",
+    "COMP CREG, B",
+    "BC LT, LOOP",
+    "NEXT SUB AREG, ='10'",
+    "COMP AREG, B",
+    "BC GT, NEXT",
+    "STOP",
+    "A DS 1",
+    "B DS 1",
+    "END"
+]
+
+literal_table = {}
+location_counter = 0
+literals_list = []
+
+for line in assembly_code:
+    tokens = line.strip().split()
+
+    if tokens[0] == 'START':
+        location_counter = int(tokens[1])
+        continue
+
+    # Check for literal in operands
+    for token in tokens:
+        if "='" in token:
+            literal = token[token.index("='"):].strip(",")
+            if literal not in literals_list:
+                literals_list.append(literal)
+
+    # Ignore label-only lines and DS lines from location counting
+    if "DS" in tokens:
+        location_counter += int(tokens[-1])
+    elif tokens[0] != 'END':
+        location_counter += 1
+
+# Assign addresses to literals (after instructions)
+for i, literal in enumerate(literals_list):
+    literal_table[literal] = location_counter + i
+
+# Display Literal Table
+print("\nLiteral Table:")
+print("{:<10} {:<10}".format("Literal", "Address"))
+for literal, address in literal_table.items():
+    print("{:<10} {:<10}".format(literal, address))
